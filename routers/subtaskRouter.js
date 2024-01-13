@@ -6,7 +6,7 @@ const {createsubTask, getSubtask, getAllSubtask, deleteSubtask} = require('../co
 router.post('/post-subtask', createsubTask)
 // router.get('/get-subtask/:id', getSubtask)
 // router.get('/get-subtasks', getAllSubtask)
-// router.delete('/delete-subtask/:id', deleteSubtask)
+router.delete('/delete-subtask', deleteSubtask)
 
 
 

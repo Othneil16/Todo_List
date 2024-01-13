@@ -12,12 +12,14 @@ const userSchema = new mongoose.Schema({
 
     phoneNumber:{
         type: String,
-        require:true
+        require:true,
+        unique:true
     },
     
     email:{
         type: String,
-        require:true
+        require:true,
+        unique:true
     },
 
     password:{
@@ -28,10 +30,7 @@ const userSchema = new mongoose.Schema({
         type: mongoose.SchemaTypes.ObjectId,
           ref:"Task"
       }],
-    // status:[{
-    //     type: mongoose.SchemaTypes.ObjectId,
-    //       ref:"status"
-    //   }]
+    
     
 },{timestamp:true})
 

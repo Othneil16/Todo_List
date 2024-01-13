@@ -5,15 +5,13 @@ const jwt = require('jsonwebtoken')
 
 exports.signUp = async (req, res)=>{
     try{
-       const {firstName, lastName, phoneNumber, email, userPassword, confirmPassword} = req.body
-       const lowerCase = email.toLowerCase()
-    //    const data ={firstName, lastName, phoneNumber, email, userPassword, confirmPassword }
-
+       const {firstname, lastname, phoneNumber, email, userPassword, confirmPassword} = req.body
+      
        await myValidate.validateAsync(req.body,(err,data)=>{
         if (err) {
-            res.json(err.message)
+           return res.json(err.message)
         } else {
-           res.json(data) 
+            return  res.json(data) 
         }
        }
     )
@@ -29,33 +27,25 @@ exports.signUp = async (req, res)=>{
 
      
     
-       const user = await userModel.create({
-        firstName, 
-        lastName, 
+       const user = await new userModel({
+        firstName:firstname.toUpperCase(),
+        lastName:lastname.toUpperCase(),
         phoneNumber, 
-        email:lowerCase,
+        email: email.toUpperCase(),
         password: hashedPassword,
 
        })
 
-      //  const userToken = jwt.sign({
-      //   userId:user._id,
-      //   email:user.email,
-      //   firstName, 
-      //   lastName
-      //  },
-      //  process.env.secret,
-      //  {expiresIn:"1week"})
-
+    
        await user.save()
 
-       res.status(201).json({
-        message:`Congratulations!!!, ${email}you have successfully registered`,
-        user,
-      //   userToken
+       return res.status(201).json({
+        message: `Congratulations!!!, ${firstname.charAt(0).toUpperCase()}${firstname.slice(1)}.${lastname.slice(0, 1).toUpperCase()} you are successfully registered`,
+        data: user,
+    
        })
     }catch(err){
-        res.status(500).json({
+        return res.status(500).json({
             error:err.message
         })
     }
@@ -64,7 +54,7 @@ exports.signUp = async (req, res)=>{
 exports.signIn = async(req, res)=>{
     try{
         const {email, password} = req.body
-        const user = await userModel.findOne({email});
+        const user = await userModel.findOne({email:email.toUpperCase()});
 
         if(!user){
            return res.status(404).json({
@@ -76,7 +66,7 @@ exports.signIn = async(req, res)=>{
 
         if(!comparePassword){
             return res.status(400).json({
-                message:'Invalid password'
+                message:`Invalid password, please type-in a correct password`
             })
         };
 
@@ -86,17 +76,19 @@ exports.signIn = async(req, res)=>{
             process.env.secret,{expiresIn:'1d'})
 
             return res.status(200).json({
-                message:'Login Successfully',
-                token
+                message: `Welcome on board ${user.firstName.charAt(0).toUpperCase()}${user.firstName.slice(1)}.${user.lastName.slice(0, 1).toUpperCase()}, Feel free to create a task of your choice`,
+                data:token
                })
 
         }catch(err){
-            res.status(500).json({
+            return res.status(500).json({
              error:err.message
             }) 
          }
 
     }
+
+
     exports.getAllUser = async(req, res)=>{
         try{
             const allUser = await userModel.find()
@@ -105,12 +97,12 @@ exports.signIn = async(req, res)=>{
         message: "unable to get all User"
     })
     }
-    res.status(200).json({
+    return res.status(200).json({
         message: "These are the User",
-        allUser
+        data:allUser
     })
         }catch(err){
-            res.status(500).json({
+           return res.status(500).json({
                 error: err.message
                })
         }
@@ -119,28 +111,32 @@ exports.signIn = async(req, res)=>{
 
     exports.signOut = async (req, res) => {
         try{
-            const userId = req.user.userId;
+            const {userId} = req.user
+            const {token} = req.user
             const user = await userModel.findById(userId);
-    
-            const token = req.headers.authorization.split(' ')[1]
-    
-            if(!user){
+
+        if(!user){
                 return res.status(404).json({
-                    message: 'This user does not exist or is already signed out'
+                    message: 'This user not found'
                 })
             }
+        
+             if (!user.token) {
+                return res.status(400).json({
+                    message: 'User does not have a valid token'
+                });
+            }
+           // Revoke token by setting its expiration to a past date
+           const decodedToken = jwt.verify(user.token, process.env.secret);
+           decodedToken.exp = 1;
     
-             // Revoke token by setting its expiration to a past date
-        const decodedToken = jwt.verify(token, process.env.secret);
-        decodedToken.exp = 1;
-    
-        res.status(200).json({
+       return res.status(200).json({
             message: 'You have signed out successfully'
         })
             
             
         }catch(err){
-            res.status(500).json({
+            return res.status(500).json({
                 message: err.message
             })
         }
@@ -148,3 +144,33 @@ exports.signIn = async(req, res)=>{
 
     
     
+// exports.logOut = async (req, res) => {
+//     try {
+//         const {userId}= req.user
+//         const user = await userModel.findById(id);
+
+//         if (!user) {
+//             return res.status(404).json({
+//                 message: `User not found`
+//             });
+//         }
+
+//         // Invalidate the user's token and add it to the user.Model.blacklist
+//         const userToken = req.user.token;
+//         userModel.blackListToken.push(userToken);
+            
+//         await userModel.save()
+        
+//         return res.status(200).json({
+//             message: "Sign-out successful"
+//         });
+
+//     } catch (error) {
+//         return res.json({
+//             error: error.message,
+//             message: "Error occurred while logging out",
+//         });
+//     }
+// };
+
+

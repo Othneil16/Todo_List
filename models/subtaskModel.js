@@ -5,10 +5,10 @@ const subtaskSchema = new mongoose.Schema({
         type: String,
         require: true
     }],
-    task:[{
-      type: mongoose.SchemaTypes.ObjectId,
-        ref:"Task"
-    }]
+    taskId:{
+      type: String,
+      require:true
+    }
 },{timestamp:true})
 
 const userSubTask = mongoose.model("subtask", subtaskSchema)

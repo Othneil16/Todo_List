@@ -17,7 +17,11 @@ const taskSchema = new mongoose.Schema({
     subTask:[{
         type: mongoose.SchemaTypes.ObjectId,
         ref:"subtask"
-    }]
+    }],
+    userId:{
+        type: String,
+    
+    }
 },{timestamp:true})
 
 const task = mongoose.model("Task", taskSchema)

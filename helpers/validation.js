@@ -1,11 +1,11 @@
 const joi = require('joi')
 
 const myValidate = joi.object({
-    firstName:joi.string()
+    firstname:joi.string()
     .min(3)
     .max(15),
 
-    lastName:joi.string()
+    lastname:joi.string()
     .min(3)
     .max(15),
 

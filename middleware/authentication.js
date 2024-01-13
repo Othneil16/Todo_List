@@ -28,21 +28,19 @@ exports.authenticate = async (req,res,next)=>{
 
         const user = await userModel.findById(decodeToken.userId)
 
-        // const checkToken = user.blackList.includes(token);
+        if(!user){
+            return res.status(404).json({
+                error: "Authorization failed: user not found" 
+            })
+        }
+        
+        // const checkToken = user.blackListToken.includes(token);
 
         // if(checkToken){
         //     return res.status(400).json({
         //         error: "user signed Out"
         //     })
         // }
-
-
-        if(!user){
-            return res.status(404).json({
-                error: "Authorization failed: user not found" 
-            })
-        }
-
         req.user = decodeToken;
         next()
 

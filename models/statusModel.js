@@ -1,18 +1,15 @@
 const mongoose = require('mongoose')
 
 const statusSchema = new mongoose.Schema({
-    title:{
+    statusDesc:{
         type:String,
         require: true
     },
-    Task:[{
+    Tasks:[{
       type: mongoose.SchemaTypes.ObjectId,
         ref:"Task"
     }],
-    // user:{
-    //     type: mongoose.SchemaTypes.ObjectId,
-    //     ref:"User"  
-    // }
+    
     
 },{timestamp:true})
 

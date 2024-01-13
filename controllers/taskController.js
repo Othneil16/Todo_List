@@ -23,7 +23,8 @@ exports.createTask = async (req, res)=>{
         })
         
         user.task.push(task._id)
-        status.Task.push(task._id)
+        status.Tasks.push(task._id)
+        task.userId = userId
         await task.save()
         await user.save()
         await status.save()
@@ -31,17 +32,16 @@ exports.createTask = async (req, res)=>{
        if(!task){
             return res.status(404).json({
                 message:`unable to create task`,
-                status
             })
 
     }else{
         return res.status(200).json({
             message:`A task created successfully`,
-            status
+            data: task
         })
     }
 }catch(err){
-    res.status(500).json({
+    return res.status(500).json({
      error: err.message
     })
  }
@@ -49,24 +49,31 @@ exports.createTask = async (req, res)=>{
 
 exports.deleteTask = async(req, res)=>{
     try{
-   const taskId = req.params.taskId
-   const subTaskId = req.params.subTaskId
+   const {userId} = req.user
+   const {taskId, subTaskId} = req.body
+   const checkTask = await taskModel.findById(taskId)
+if (checkTask.userId !== userId) {
+    return res.status(403).json({
+        message: "Permission denied. You are not the owner of this task."
+    });
+}
 
    const task = await taskModel.findByIdAndDelete(taskId)
    const subTask = await subTaskModel.findById(subTaskId)
 
-   await subTask.deleteMany({task:id})
-if(!task){
+    await subTask.deleteMany({task:id})
+   if(!task){
     return res.status(404).json({
         message:"unable to delete task"
-    })
-}else{
-    res.status(200).json({
-        message:" Task has been successfully deleted"
+    })    
+   }else{
+    return res.status(200).json({
+        message:"Task has been successfully deleted",
+        data:task
     })
 }
     }catch(err){
-        res.status(500).json({
+        return res.status(500).json({
             error: err.message
            })
     }
@@ -75,29 +82,36 @@ if(!task){
 
 exports.updateTask = async(req, res)=>{
     try{
-   const {id, title, desc} = req.body
-   const taskId = await taskModel.findById(id)
-   
+   const {userId} = req.user
+   const {taskId, title, desc} = req.body
+   const task = await taskModel.findById(taskId)
+  
    if(!taskId){
     return res.status(404).json({
         message:"cannot find task"
     })
 }
+   
+if (task.userId !== userId) {
+    return res.status(403).json({
+        message: "Permission denied. You are not the owner of this task."
+    });
+}
 
    const updatetask = await taskModel.findByIdAndUpdate(taskId, {title, desc}, {new:true})
 
-if(!updatetask){
+   if(!updatetask){
     return res.status(404).json({
         message:"unable to update task"
     })
-}else{
-    res.status(200).json({
+   }else{
+   return res.status(200).json({
         message:"Task has been successfully updated",
-        updatetask
+        data: updatetask
     })
 }
     }catch(err){
-        res.status(500).json({
+      return  res.status(500).json({
             error: err.message
            })
     }
@@ -107,16 +121,29 @@ if(!updatetask){
 
 exports.getTask = async(req, res)=>{
     try{
-     const id = req.body.id
-     const task = await taskModel.findById(id).populate("subTask")
-if(!task){
-return res.status(403).json({
-    message: "unable to get task"
-})
+     const {userId} = req.user
+     const {taskId} = req.body
+   
+     const task = await taskModel.findById(taskId).populate({
+        path: "subTask",
+        populate: { path: "subtask"}
+    });
+    
+    if(!task){
+    return res.status(403).json({
+    message: "Task not found"
+    })
+  }
+  
+if (task.userId !== userId) {
+    return res.status(403).json({
+        message: "Permission denied. You are not the owner of this task."
+    });
 }
-res.status(200).json({
-    message: "Here is your task",
-    task
+
+    return res.status(200).json({
+    message: "Check track of your task and do good to accomplish it",
+    data:task
 })
     }catch(err){
         res.status(500).json({
@@ -127,49 +154,53 @@ res.status(200).json({
 
 exports.getAlltask = async(req, res)=>{
     try{
-        const tasks = await taskModel.find()
+        const {userId} = req.user
+        const tasks = await taskModel.find({userId}).select(["title", "desc", "subTask"]).populate({
+            path: "subTask",
+        })
         if(!tasks){
             return res.status(404).json({
-                message:'task not found'
+                message:'tasks not found'
             })
         }
     if(tasks.length === 0){
     return res.status(203).json({
-    message: "unable to get all task"
+    message: "unable to get all tasks"
 })
 }
-res.status(200).json({
+    return res.status(200).json({
     message: `There are ${tasks.length} tasks present `,
-    tasks
+    data: tasks
 })
     }catch(err){
-        res.status(500).json({
+        return res.status(500).json({
             error: err.message
            })
     }
 }
 
 
-exports.deleteSubtask = async(req, res)=>{
-    try{
-   const subTaskId = req.params.subTaskId
+// exports.deleteSubtask = async(req, res)=>{
+//     try{
+//    const subTaskId = req.params.subTaskId
 
-   const subTask = await subTaskModel.findByIdAndDelete(subTaskId)
+//    const subTask = await subTaskModel.findByIdAndDelete(subTaskId)
 
-if(!subTask){
-    return res.status(404).json({
-        message:"unable to delete subTask"
-    })
-}else{
-    res.status(200).json({
-        message:" subTask has been successfully deleted"
-    })
-}
-    }catch(err){
-        res.status(500).json({
-            error: err.message
-           })
-    }
-}
+// if(!subTask){
+//     return res.status(404).json({
+//         message:"unable to delete subTask"
+//     })
+// }else{
+//     return res.status(200).json({
+//         message:" subTask has been successfully deleted",
+//         data:subTask
+//     })
+// }
+//     }catch(err){
+//         return res.status(500).json({
+//             error: err.message
+//            })
+//     }
+// }
 
 

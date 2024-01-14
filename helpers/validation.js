@@ -21,10 +21,10 @@ const myValidate = joi.object({
     .max(11),
 
     userPassword:joi.string()
-    .pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
+    .pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).min(7).max(10),
 
     confirmPassword:joi.string()
-    .pattern(new RegExp('^[a-zA-Z0-9]{3,30}$'))
+    .pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).min(7).max(10),
 })
 
 module.exports= {myValidate}

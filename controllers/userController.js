@@ -174,3 +174,39 @@ exports.signIn = async(req, res)=>{
 // };
 
 
+exports.getUser = async(req, res)=>{
+    try{
+     const {userId} = req.user
+    //  const {taskId} = req.body
+   
+     const user = await userModel.findById(userId);
+
+     if(!user){
+             return res.status(404).json({
+                 message: 'This user not found'
+             })
+         }
+
+     
+     const userData = await userModel.findById(userId).populate({
+        path: "task",
+    });
+    
+   
+  
+if (userData.task.length === 0) {
+    return res.status(403).json({
+        message: "No task found, kindly create a task"
+    });
+}
+
+    return res.status(200).json({
+    message: "Check track of your task and do good to accomplish it",
+    data:userData
+})
+    }catch(err){
+        res.status(500).json({
+            error: err.message
+           })
+    }
+}

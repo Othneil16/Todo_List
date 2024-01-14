@@ -7,7 +7,7 @@ exports.createTask = async (req, res)=>{
     try{
 
         const {statusId, title, desc} = req.body
-        const userId = req.user.userId
+        const {userId} = req.user
         const status = await statusModel.findById(statusId)
         const user = await userModel.findById(userId)
 

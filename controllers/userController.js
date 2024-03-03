@@ -143,7 +143,7 @@ exports.signIn = async(req, res)=>{
     }
 
     
-    
+        
 // exports.logOut = async (req, res) => {
 //     try {
 //         const {userId}= req.user
@@ -177,7 +177,6 @@ exports.signIn = async(req, res)=>{
 exports.getUser = async(req, res)=>{
     try{
      const {userId} = req.user
-    //  const {taskId} = req.body
    
      const user = await userModel.findById(userId);
 
@@ -190,7 +189,7 @@ exports.getUser = async(req, res)=>{
      
      const userData = await userModel.findById(userId).populate({
         path: "task",
-    });
+    }).select(["firstName", "lastName", "phoneNumber", "email", "task"]);
     
    
   

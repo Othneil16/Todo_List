@@ -21,9 +21,20 @@ exports.createTask = async (req, res)=>{
             title,
             desc
         })
+
+        // Check if the task ID is not already in the user's tasks array
+        if (!user.task.includes(task._id)) {
+        user.task.push(task._id);
+        }
+
+        // Check if the task ID is not already in the status's Tasks array
+        if (!status.Tasks.includes(task._id)) {
+        status.Tasks.push(task._id);
+        }
+
         
-        user.task.push(task._id)
-        status.Tasks.push(task._id)
+        // user.task.push(task._id)
+        // status.Tasks.push(task._id)
         task.userId = userId
         await task.save()
         await user.save()
